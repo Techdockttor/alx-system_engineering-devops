@@ -1,0 +1,56 @@
+# Configures Nginx to serve the /number_odd_or_even/ route on AirBnB_clone_v2.
+
+server {
+    # Listen on port 80
+    listen      80 default_server;
+    listen      [::]:80 default_server ipv6only=on;
+
+    # Use IP of server as domain name
+    server_name 52.72.12.225;
+
+    # Customize HTTP response header
+    add_header  X-Served-By 151957-web-01;
+
+    # Serve /airbnb-onepage/ on port 80 from process running on port 5000
+    location = /airbnb-onepage/ {
+        proxy_pass http://127.0.0.1:5000/airbnb-onepage/;
+    }
+
+    # Serve /number_odd_or_even/<any num> ron port 80 from process running on port 5001
+    location ~ /airbnb-dynamic/number_odd_or_even/(\d+)$ {
+        proxy_pass http://127.0.0.1:5001/number_odd_or_even/$1;
+    }
+
+    # 404 error page
+    error_page 404 /404.html;
+    location /404 {
+        root /var/www/html;
+        internal;
+    }
+}
+
+server {
+    listen 80;
+    server_name 52.72.12.225;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    listen 80;
+    server_name web-02.chesah.tech;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
